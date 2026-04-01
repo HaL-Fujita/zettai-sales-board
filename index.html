@@ -202,7 +202,7 @@ const buttons = [
   {
     icon: '📞',
     label: 'アポ\n取りました！',
-    speech: 'アポ取りました。やった。チームぜったい、最高です。',
+    speech: 'アポ取りました。やった。チーム株式会社ぜったい、最高です。',
     color: 'c0'
   },
   {
@@ -214,7 +214,7 @@ const buttons = [
   {
     icon: '✍️',
     label: '契約\n取りました！',
-    speech: '契約取りました。よっしゃ。ぜったいは絶対最強です。やりました。',
+    speech: '契約取りました。よっしゃ。株式会社ぜったいは絶対最強です。やりました。',
     color: 'c2'
   },
   {
@@ -280,15 +280,16 @@ function speak(text) {
 function doSpeak(text, voices) {
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang    = 'ja-JP';
-  utter.rate    = 1.05;  // ゆっくり明瞭に
-  utter.pitch   = 1.0;   // デフォルト（歪みなし）
+  utter.rate    = 1.0;   // 自然なテンポ
+  utter.pitch   = 0.7;   // 低め = 男性っぽく落ち着いた声
   utter.volume  = 1.0;
 
-  // 日本語音声を優先選択（Google日本語 > Apple Kyoko/O-ren > その他日本語）
+  // 男性声を優先（Otoya > Google日本語 > その他日本語）
   const preferred = [
-    voices.find(v => v.lang === 'ja-JP' && v.name.includes('Google')),
-    voices.find(v => v.lang === 'ja-JP' && v.name.includes('Haruka')),
-    voices.find(v => v.lang === 'ja-JP' && v.name.includes('Kyoko')),
+    voices.find(v => v.lang === 'ja-JP' && v.name.includes('Otoya')),
+    voices.find(v => v.lang === 'ja-JP' && v.name.includes('otoya')),
+    voices.find(v => v.lang === 'ja-JP' && v.name.toLowerCase().includes('male')),
+    voices.find(v => v.lang === 'ja-JP' && v.name.includes('Google') && !v.name.includes('Female')),
     voices.find(v => v.lang === 'ja-JP'),
     voices.find(v => v.lang.startsWith('ja')),
   ].find(Boolean);
