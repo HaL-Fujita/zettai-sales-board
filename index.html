@@ -202,37 +202,37 @@ const buttons = [
   {
     icon: '📞',
     label: 'アポ\n取りました！',
-    speech: 'アポ、取りましたーーー！！やったーーー！！チームZETTAI最高だーーー！！！',
+    speech: 'アポ取りました！やった！やった！チームZETTAI、最高です！',
     color: 'c0'
   },
   {
     icon: '🤝',
     label: '受注\nいただきました！',
-    speech: '受注、いただきましたーーー！！やばいやばいやばーーい！！最高すぎるーーー！！！',
+    speech: '受注いただきました！やばい！やばい！本当に最高です！ありがとうございます！',
     color: 'c1'
   },
   {
     icon: '✍️',
     label: '契約\n取りました！',
-    speech: '契約、取りましたーーー！！よっしゃーーー！！ZETTAIは絶対最強だーーー！！！',
+    speech: '契約取りました！よっしゃ！ZETTAIは絶対最強です！やりました！',
     color: 'c2'
   },
   {
     icon: '🌐',
     label: 'HP制作\nいただきました！',
-    speech: 'ホームページ制作、いただいちゃいましたーーー！！ありがとうございますーーー！！全力で作りまーーす！！！',
+    speech: 'ホームページ制作、いただきました！ありがとうございます！全力で作ります！',
     color: 'c3'
   },
   {
     icon: '🚀',
     label: 'OpenClaw\n月額いただきました！',
-    speech: 'オープンクロー、月額でいただきましたーーー！！最高ーーー！！ありがとうございますーーー！！！',
+    speech: 'オープンクロー、月額でいただきました！最高です！本当にありがとうございます！',
     color: 'c4'
   },
   {
     icon: '⚙️',
     label: 'OpenClaw\n設定代行いただきました！',
-    speech: 'オープンクローの設定代行、いただきましたーーー！！やったーーー！！全力で仕上げまーーす！！！',
+    speech: 'オープンクローの設定代行、いただきました！やった！全力で仕上げます！',
     color: 'c5'
   }
 ];
@@ -280,8 +280,8 @@ function speak(text) {
 function doSpeak(text, voices) {
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang    = 'ja-JP';
-  utter.rate    = 1.2;   // 速め
-  utter.pitch   = 1.6;   // かなり高め・元気
+  utter.rate    = 1.15;  // 自然なテンポ
+  utter.pitch   = 1.1;   // 少し高め（掠れない範囲）
   utter.volume  = 1.0;
 
   // 日本語音声を優先選択（Google日本語 > Apple Kyoko/O-ren > その他日本語）
