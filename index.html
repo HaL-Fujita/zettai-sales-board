@@ -585,36 +585,19 @@ function addPopLines() {
   }
 }
 
-// ── xAI 音声生成 ──
-async function playVoice(text) {
-  const status = document.getElementById('sound-status');
-  status.textContent = '🎙️ Grok音声生成中...';
-  status.classList.add('show');
-  try {
-    const res = await fetch('http://localhost:8920/speak', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-      signal: AbortSignal.timeout(20000)
-    });
-    if (!res.ok) throw new Error('server error');
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audio.play();
-    status.textContent = '🎙️ Grok音声';
-    setTimeout(() => status.classList.remove('show'), 3000);
-  } catch(e) {
-    // フォールバック: ブラウザTTS
-    status.textContent = '🔊 ブラウザ音声 (xAIサーバー未起動)';
-    setTimeout(() => status.classList.remove('show'), 3000);
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'ja-JP'; utter.rate = 1.1;
-    const voices = speechSynthesis.getVoices();
-    const jpVoice = voices.find(v => v.lang.startsWith('ja'));
-    if (jpVoice) utter.voice = jpVoice;
-    speechSynthesis.speak(utter);
-  }
+// ── xAI 生成済み音声を再生（WAFファイル直接） ──
+const AUDIO_FILES = {
+  apo:     'audio/apo.wav',
+  juchu:   'audio/juchu.wav',
+  contact: 'audio/contact.wav',
+  other:   'audio/other.wav',
+};
+let currentAudio = null;
+
+function playVoice(type) {
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+  currentAudio = new Audio(AUDIO_FILES[type]);
+  currentAudio.play();
 }
 
 // ── フィードに追加 ──
@@ -659,7 +642,7 @@ function fire(btn, type) {
   showOverlay(cfg, type);
 
   // 音声
-  playVoice(cfg.speech);
+  playVoice(type);
 }
 
 function showOverlay(cfg, type) {
