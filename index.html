@@ -1,340 +1,719 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZETTAI 営業速報</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&display=swap');
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZETTAI 営業速報ボード</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --white:   #FFFFFF;
+      --off:     #F8F8F6;
+      --ink:     #0D0D0D;
+      --ink2:    #444;
+      --ink3:    #999;
+      --red:     #E8001C;
+      --gold:    #D4A017;
+      --border:  #E8E8E4;
+      --shadow:  0 2px 20px rgba(0,0,0,.06);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  * { margin:0; padding:0; box-sizing:border-box; }
+    /* ─── HEADER ─── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--white);
+      border-bottom: 2px solid var(--ink);
+      padding: 0 40px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Oswald', sans-serif;
+      font-size: 22px; font-weight: 900;
+      letter-spacing: .1em;
+      color: var(--ink);
+    }
+    .logo span { color: var(--red); }
+    .header-right { display: flex; align-items: center; gap: 24px; }
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      color: var(--red);
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .4; transform: scale(.7); }
+    }
+    .date-disp { font-size: 12px; color: var(--ink3); letter-spacing: .06em; }
 
-  body {
-    background: #0a0a0f;
-    font-family: 'Noto Sans JP', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    padding: 20px;
-  }
+    /* ─── HERO TICKER ─── */
+    .ticker-wrap {
+      background: var(--ink); overflow: hidden; height: 36px;
+      display: flex; align-items: center;
+    }
+    .ticker-track {
+      display: flex; gap: 0; animation: tick 18s linear infinite; white-space: nowrap;
+    }
+    @keyframes tick { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .ticker-item { font-size: 11px; font-weight: 700; letter-spacing: .18em; color: rgba(255,255,255,.5); padding: 0 36px; text-transform: uppercase; }
+    .ticker-item.hot { color: var(--red); }
 
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 20% 40%, rgba(255,60,0,.12) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 70%, rgba(255,200,0,.10) 0%, transparent 60%);
-    pointer-events: none;
-  }
+    /* ─── MAIN LAYOUT ─── */
+    main { max-width: 1200px; margin: 0 auto; padding: 48px 40px; }
 
-  .header {
-    text-align: center;
-    margin-bottom: 36px;
-    z-index: 1;
-  }
-  .header .logo {
-    font-size: clamp(13px, 3vw, 16px);
-    font-weight: 900;
-    letter-spacing: .4em;
-    color: #ff4500;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .header h1 {
-    font-size: clamp(22px, 5vw, 34px);
-    font-weight: 900;
-    color: #fff;
-    letter-spacing: -.02em;
-    line-height: 1.1;
-  }
-  .header h1 span { color: #ffd700; }
+    /* ─── STATS ROW ─── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+      background: var(--border); margin-bottom: 48px;
+    }
+    .stat-card {
+      background: var(--white); padding: 28px 24px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .stat-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 3px; background: var(--border);
+    }
+    .stat-card.red::after { background: var(--red); }
+    .stat-card.gold::after { background: var(--gold); }
+    .stat-label { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink3); margin-bottom: 10px; }
+    .stat-val {
+      font-family: 'Oswald', sans-serif;
+      font-size: 3rem; font-weight: 900; line-height: 1;
+      color: var(--ink); transition: color .15s;
+    }
+    .stat-val.flash { color: var(--red) !important; }
+    .stat-val small { font-size: 1.1rem; font-weight: 400; font-family: 'Noto Sans JP', sans-serif; }
+    .stat-unit { font-size: 11px; color: var(--ink3); margin-top: 6px; letter-spacing: .06em; }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    width: 100%;
-    max-width: 820px;
-    z-index: 1;
-  }
-  @media (max-width: 600px) {
-    .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  }
-  @media (max-width: 380px) {
-    .grid { grid-template-columns: 1fr; }
-  }
+    /* ─── SECTION TITLE ─── */
+    .sec-title {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 11px; font-weight: 700; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--ink3);
+      margin-bottom: 24px;
+    }
+    .sec-title::before {
+      content: ''; display: block; width: 20px; height: 2px; background: var(--red);
+    }
 
-  .btn {
-    position: relative;
-    border: none;
-    border-radius: 18px;
-    padding: 0;
-    cursor: pointer;
-    overflow: hidden;
-    transition: transform .12s, box-shadow .12s;
-    aspect-ratio: 1 / 1.05;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn:hover { transform: scale(1.04); }
-  .btn:active { transform: scale(.96); }
+    /* ─── BUTTONS ─── */
+    .buttons-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+      margin-bottom: 56px;
+    }
 
-  .btn-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%; height: 100%;
-    padding: 18px 12px;
-    border-radius: 18px;
-    border: 2px solid rgba(255,255,255,.15);
-    transition: border-color .2s;
-  }
-  .btn:hover .btn-inner { border-color: rgba(255,255,255,.4); }
+    .sale-btn {
+      position: relative;
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform .12s, box-shadow .12s;
+      outline: none;
+      text-align: left;
+    }
+    .sale-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.1); }
+    .sale-btn:active { transform: translateY(1px) scale(.98); }
 
-  .c0 .btn-inner { background: linear-gradient(145deg, #1a1a2e, #16213e); box-shadow: 0 0 0 1px #e94560, 0 8px 32px rgba(233,69,96,.3); }
-  .c1 .btn-inner { background: linear-gradient(145deg, #1a2a1a, #0d1f0d); box-shadow: 0 0 0 1px #00d26a, 0 8px 32px rgba(0,210,106,.25); }
-  .c2 .btn-inner { background: linear-gradient(145deg, #2a1a10, #1f120a); box-shadow: 0 0 0 1px #ff8c00, 0 8px 32px rgba(255,140,0,.3); }
-  .c3 .btn-inner { background: linear-gradient(145deg, #1a102a, #140d1f); box-shadow: 0 0 0 1px #9b59b6, 0 8px 32px rgba(155,89,182,.3); }
-  .c4 .btn-inner { background: linear-gradient(145deg, #2a1a1a, #1f0d0d); box-shadow: 0 0 0 1px #e74c3c, 0 8px 32px rgba(231,76,60,.3); }
-  .c5 .btn-inner { background: linear-gradient(145deg, #0e1f2a, #0a1520); box-shadow: 0 0 0 1px #00bfff, 0 8px 32px rgba(0,191,255,.3); }
+    .btn-inner {
+      display: flex; align-items: center;
+      padding: 28px 32px; gap: 24px;
+    }
 
-  .btn-icon {
-    font-size: clamp(28px, 5vw, 40px);
-    line-height: 1;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,.4));
-  }
-  .btn-text {
-    font-size: clamp(11px, 2vw, 14px);
-    font-weight: 900;
-    color: #fff;
-    text-align: center;
-    line-height: 1.35;
-    letter-spacing: -.01em;
-    word-break: keep-all;
-  }
+    .btn-icon-wrap {
+      flex-shrink: 0;
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      transition: transform .3s;
+    }
+    .sale-btn:hover .btn-icon-wrap { transform: rotate(8deg) scale(1.1); }
 
-  .btn.fired .btn-inner {
-    animation: flash .45s ease-out;
-  }
-  @keyframes flash {
-    0%   { filter: brightness(1); }
-    30%  { filter: brightness(2.5); }
-    100% { filter: brightness(1); }
-  }
+    .btn-text { flex: 1; }
+    .btn-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.6rem; font-weight: 900;
+      letter-spacing: .04em; line-height: 1.2;
+      color: var(--ink); margin-bottom: 6px;
+    }
+    .btn-sub { font-size: 12px; color: var(--ink3); letter-spacing: .06em; }
 
-  .confetti {
-    position: fixed; inset: 0;
-    pointer-events: none;
-    z-index: 999;
-    overflow: hidden;
-  }
-  .piece {
-    position: absolute;
-    top: -20px;
-    border-radius: 2px;
-    animation: fall linear forwards;
-  }
-  @keyframes fall {
-    0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-    80%  { opacity: 1; }
-    100% { transform: translateY(110vh) rotate(720deg) scale(.4); opacity: 0; }
-  }
+    .btn-count {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2.4rem; font-weight: 900;
+      color: var(--border); line-height: 1;
+      transition: color .2s;
+    }
+    .sale-btn:hover .btn-count { color: var(--ink); }
 
-  .shout {
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    background: #fff;
-    color: #111;
-    font-size: clamp(20px, 4vw, 32px);
-    font-weight: 900;
-    padding: 20px 36px;
-    border-radius: 20px;
-    text-align: center;
-    pointer-events: none;
-    z-index: 998;
-    box-shadow: 0 12px 60px rgba(0,0,0,.6);
-    max-width: 90vw;
-    line-height: 1.4;
-  }
-  .shout.show {
-    animation: popIn .5s cubic-bezier(.34,1.56,.64,1) forwards,
-               popOut .35s ease-in 2.0s forwards;
-  }
-  @keyframes popIn {
-    from { transform: translate(-50%,-50%) scale(0) rotate(-4deg); opacity: 0; }
-    to   { transform: translate(-50%,-50%) scale(1) rotate(0deg);  opacity: 1; }
-  }
-  @keyframes popOut {
-    from { transform: translate(-50%,-50%) scale(1); opacity: 1; }
-    to   { transform: translate(-50%,-50%) scale(.7); opacity: 0; }
-  }
+    /* ボタン個別スタイル */
+    .btn-apo .btn-icon-wrap { background: #FFF0F2; }
+    .btn-apo .btn-title { color: var(--red); }
+    .btn-apo { border-color: var(--red); }
 
-  footer {
-    margin-top: 28px;
-    font-size: 11px;
-    color: rgba(255,255,255,.2);
-    letter-spacing: .1em;
-    z-index: 1;
-  }
-</style>
+    .btn-juchu .btn-icon-wrap { background: #FFF8E0; }
+    .btn-juchu .btn-title { color: #B8860B; }
+    .btn-juchu { border-color: #D4A017; }
+
+    .btn-contact .btn-icon-wrap { background: #F0F8FF; }
+    .btn-contact { border-color: #4A90E2; }
+    .btn-contact .btn-title { color: #2266AA; }
+
+    .btn-other .btn-icon-wrap { background: #F0FFF4; }
+    .btn-other { border-color: #2ECC71; }
+    .btn-other .btn-title { color: #1A7A3A; }
+
+    /* ─── FIRED STATE ─── */
+    .sale-btn.fired { animation: btnFire .5s ease; }
+    @keyframes btnFire {
+      0%   { transform: scale(1); }
+      25%  { transform: scale(1.06); }
+      50%  { transform: scale(.97); }
+      75%  { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    /* ─── FEED ─── */
+    .feed-wrap {
+      border: 2px solid var(--border); border-radius: 4px;
+      overflow: hidden;
+    }
+    .feed-header {
+      background: var(--ink); padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .feed-header-title {
+      font-size: 12px; font-weight: 700; letter-spacing: .16em;
+      text-transform: uppercase; color: #fff;
+    }
+    .feed-clear {
+      font-size: 11px; color: rgba(255,255,255,.4); background: none;
+      border: none; cursor: pointer; letter-spacing: .08em;
+      transition: color .2s;
+    }
+    .feed-clear:hover { color: rgba(255,255,255,.8); }
+
+    #feed { max-height: 320px; overflow-y: auto; }
+    #feed::-webkit-scrollbar { width: 4px; }
+    #feed::-webkit-scrollbar-track { background: var(--off); }
+    #feed::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .feed-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      animation: slideIn .4s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .feed-emoji { font-size: 20px; flex-shrink: 0; }
+    .feed-body { flex: 1; }
+    .feed-name { font-size: 14px; font-weight: 700; }
+    .feed-time { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+    .feed-empty { padding: 40px 24px; text-align: center; font-size: 13px; color: var(--ink3); letter-spacing: .06em; }
+
+    /* ─── OVERLAY (パチンコ演出) ─── */
+    #overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      display: none; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    #overlay.active { display: flex; }
+
+    /* 閃光 */
+    .flash-bg {
+      position: absolute; inset: 0;
+      background: var(--red);
+      animation: flashBg .12s ease-out forwards;
+    }
+    @keyframes flashBg {
+      0%   { opacity: .7; }
+      100% { opacity: 0; }
+    }
+
+    /* メイン吹き出し */
+    .pop-box {
+      position: relative; z-index: 2;
+      background: var(--white);
+      border: 4px solid var(--ink);
+      border-radius: 8px;
+      padding: 48px 64px;
+      text-align: center;
+      animation: popIn .4s cubic-bezier(.34,1.56,.64,1) forwards;
+      max-width: 520px; width: 90%;
+    }
+    @keyframes popIn {
+      0%   { opacity: 0; transform: scale(.5) rotate(-3deg); }
+      60%  { opacity: 1; transform: scale(1.08) rotate(1deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .pop-badge {
+      display: inline-block;
+      font-size: 10px; font-weight: 700; letter-spacing: .18em;
+      text-transform: uppercase; padding: 5px 16px;
+      border-radius: 2px; margin-bottom: 20px;
+    }
+
+    .pop-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 3.6rem; font-weight: 900;
+      line-height: 1.1; letter-spacing: .02em;
+      color: var(--ink); margin-bottom: 16px;
+    }
+
+    .pop-sub {
+      font-size: 15px; color: var(--ink2); line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    .pop-num {
+      font-family: 'Oswald', sans-serif;
+      font-size: 5rem; font-weight: 900;
+      line-height: 1; color: var(--red);
+      animation: numBounce .5s cubic-bezier(.34,1.56,.64,1) .2s both;
+    }
+    @keyframes numBounce {
+      0%   { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+    .pop-num-label { font-size: 13px; color: var(--ink3); margin-top: 8px; letter-spacing: .08em; }
+
+    /* 装飾ライン */
+    .pop-lines {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+      border-radius: 4px;
+    }
+    .pop-line {
+      position: absolute;
+      background: var(--red); opacity: .06;
+      animation: lineShoot .6s ease-out forwards;
+    }
+    @keyframes lineShoot {
+      0%   { transform: scaleX(0); opacity: .12; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+
+    /* ─── CONFETTI ─── */
+    .confetti-piece {
+      position: fixed; width: 10px; height: 10px;
+      border-radius: 2px;
+      pointer-events: none; z-index: 999;
+      animation: confettiFall var(--dur) ease-out forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(var(--dy)) translateX(var(--dx)) rotate(var(--rot)) scale(.5); opacity: 0; }
+    }
+
+    /* ─── SOUND STATUS ─── */
+    .sound-status {
+      position: fixed; bottom: 24px; right: 24px; z-index: 500;
+      background: var(--ink); color: rgba(255,255,255,.6);
+      padding: 8px 16px; border-radius: 2px;
+      font-size: 11px; letter-spacing: .1em;
+      opacity: 0; transition: opacity .3s;
+    }
+    .sound-status.show { opacity: 1; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 700px) {
+      main { padding: 32px 16px; }
+      header { padding: 0 16px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .buttons-grid { grid-template-columns: 1fr; }
+      .pop-title { font-size: 2.4rem; }
+      .pop-num { font-size: 3.5rem; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">株式会社 ZETTAI</div>
-  <h1>営業 <span>速報</span> ボード 🔥</h1>
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo">ZETTAI<span>.</span></div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div class="date-disp" id="date-disp"></div>
+  </div>
+</header>
+
+<!-- ── TICKER ── -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item hot">🔥 今日も最高の一日を</span>
+    <span class="ticker-item">ZETTAI SALES BOARD</span>
+    <span class="ticker-item hot">💪 チーム全員で勝ちにいく</span>
+    <span class="ticker-item">Powered by OpenClaw × xAI</span>
+    <span class="ticker-item hot">🎯 目標達成まであと一歩</span>
+    <span class="ticker-item">株式会社ZETTAI</span>
+    <span class="ticker-item hot">🔥 今日も最高の一日を</span>
+    <span class="ticker-item">ZETTAI SALES BOARD</span>
+    <span class="ticker-item hot">💪 チーム全員で勝ちにいく</span>
+    <span class="ticker-item">Powered by OpenClaw × xAI</span>
+    <span class="ticker-item hot">🎯 目標達成まであと一歩</span>
+    <span class="ticker-item">株式会社ZETTAI</span>
+  </div>
 </div>
 
-<div class="grid" id="grid"></div>
-<div class="confetti" id="confetti"></div>
-<div class="shout" id="shout"></div>
+<!-- ── MAIN ── -->
+<main>
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card red">
+      <div class="stat-label">本日のアポ数</div>
+      <div class="stat-val" id="stat-apo">0<small>件</small></div>
+      <div class="stat-unit">TODAY APO</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-label">本日の受注数</div>
+      <div class="stat-val" id="stat-juchu">0<small>件</small></div>
+      <div class="stat-unit">TODAY ORDER</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">本日の問合せ</div>
+      <div class="stat-val" id="stat-contact">0<small>件</small></div>
+      <div class="stat-unit">INQUIRY</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">その他報告</div>
+      <div class="stat-val" id="stat-other">0<small>件</small></div>
+      <div class="stat-unit">OTHER</div>
+    </div>
+  </div>
 
-<footer>ZETTAI SALES BOARD — Powered by OpenClaw</footer>
+  <!-- Buttons -->
+  <div class="sec-title">報告ボード — 押したら全員に届く</div>
+  <div class="buttons-grid">
+
+    <button class="sale-btn btn-apo" onclick="fire(this, 'apo')">
+      <div class="btn-inner">
+        <div class="btn-icon-wrap">📞</div>
+        <div class="btn-text">
+          <div class="btn-title">アポ 取りました！</div>
+          <div class="btn-sub">商談の機会をいただきました</div>
+        </div>
+        <div class="btn-count" id="cnt-apo">0</div>
+      </div>
+    </button>
+
+    <button class="sale-btn btn-juchu" onclick="fire(this, 'juchu')">
+      <div class="btn-inner">
+        <div class="btn-icon-wrap">🏆</div>
+        <div class="btn-text">
+          <div class="btn-title">受注 いただきました！</div>
+          <div class="btn-sub">契約成立・お客様ありがとうございます</div>
+        </div>
+        <div class="btn-count" id="cnt-juchu">0</div>
+      </div>
+    </button>
+
+    <button class="sale-btn btn-contact" onclick="fire(this, 'contact')">
+      <div class="btn-inner">
+        <div class="btn-icon-wrap">💌</div>
+        <div class="btn-text">
+          <div class="btn-title">問い合わせ 来ました！</div>
+          <div class="btn-sub">新規お問い合わせを受領しました</div>
+        </div>
+        <div class="btn-count" id="cnt-contact">0</div>
+      </div>
+    </button>
+
+    <button class="sale-btn btn-other" onclick="fire(this, 'other')">
+      <div class="btn-inner">
+        <div class="btn-icon-wrap">⚡</div>
+        <div class="btn-text">
+          <div class="btn-title">グッドニュース！</div>
+          <div class="btn-sub">チームに共有したいことがあります</div>
+        </div>
+        <div class="btn-count" id="cnt-other">0</div>
+      </div>
+    </button>
+
+  </div>
+
+  <!-- Feed -->
+  <div class="sec-title">活動ログ</div>
+  <div class="feed-wrap">
+    <div class="feed-header">
+      <div class="feed-header-title">REALTIME FEED</div>
+      <button class="feed-clear" onclick="clearFeed()">クリア</button>
+    </div>
+    <div id="feed">
+      <div class="feed-empty" id="feed-empty">まだ報告がありません。最初の一件を報告しましょう！</div>
+    </div>
+  </div>
+</main>
+
+<!-- ── OVERLAY ── -->
+<div id="overlay">
+  <div class="flash-bg" id="flash-bg"></div>
+  <div class="pop-box" id="pop-box">
+    <div class="pop-lines" id="pop-lines"></div>
+    <div class="pop-badge" id="pop-badge"></div>
+    <div class="pop-title" id="pop-title"></div>
+    <p class="pop-sub" id="pop-sub"></p>
+    <div class="pop-num" id="pop-num"></div>
+    <div class="pop-num-label" id="pop-num-label"></div>
+  </div>
+</div>
+
+<!-- ── SOUND STATUS ── -->
+<div class="sound-status" id="sound-status">🎙️ 音声生成中...</div>
 
 <script>
-const buttons = [
-  {
-    icon: '📞',
-    label: 'アポ\n取りました！',
-    speech: 'アポ取りました。やった。チーム株式会社ぜったい、最高です。',
-    color: 'c0'
+const CONFIGS = {
+  apo: {
+    emoji: '📞',
+    badge: '📞 アポ獲得',
+    badgeColor: '#E8001C',
+    title: 'アポ\n取りました！',
+    sub: '最高です！チーム全員で前進しましょう！',
+    label: '本日アポ数',
+    statId: 'stat-apo',
+    cntId: 'cnt-apo',
+    speech: 'アポ取りました！やりました！チーム株式会社ゼッタイ、最高です！今日も絶好調！',
+    confettiColors: ['#E8001C','#FF4444','#FF8888','#FFB0B0','#FFDDDD'],
   },
-  {
-    icon: '🤝',
-    label: '受注\nいただきました！',
-    speech: '受注いただきました。やばい、本当に最高です。ありがとうございます。',
-    color: 'c1'
+  juchu: {
+    emoji: '🏆',
+    badge: '🏆 受注獲得',
+    badgeColor: '#D4A017',
+    title: '受注\nいただきました！',
+    sub: 'ありがとうございます！お客様に最高の価値を届けましょう！',
+    label: '本日受注数',
+    statId: 'stat-juchu',
+    cntId: 'cnt-juchu',
+    speech: '受注いただきました！やばい、本当に最高です！ありがとうございます！チーム全員に感謝！',
+    confettiColors: ['#D4A017','#F5C842','#FFE066','#FFF3B0','#FFFDE0'],
   },
-  {
-    icon: '✍️',
-    label: '契約\n取りました！',
-    speech: '契約取りました。よっしゃ。株式会社ぜったいは絶対最強です。やりました。',
-    color: 'c2'
+  contact: {
+    emoji: '💌',
+    badge: '💌 問い合わせ',
+    badgeColor: '#2266AA',
+    title: '問い合わせ\n来ました！',
+    sub: '新しいご縁のはじまりです！丁寧に対応しましょう！',
+    label: '本日問い合わせ数',
+    statId: 'stat-contact',
+    cntId: 'cnt-contact',
+    speech: '問い合わせが来ました！新しいチャンスです！ありがとうございます！',
+    confettiColors: ['#2266AA','#4488CC','#66AAEE','#AADDFF','#DDEEFF'],
   },
-  {
-    icon: '🌐',
-    label: 'HP制作\nいただきました！',
-    speech: 'ホームページ制作、いただきました。ありがとうございます。全力で作ります。',
-    color: 'c3'
-  },
-  {
-    icon: '🚀',
-    label: 'OpenClaw\n月額いただきました！',
-    speech: 'オープンクロー、月額でいただきました。最高です。本当にありがとうございます。',
-    color: 'c4'
-  },
-  {
-    icon: '⚙️',
-    label: 'OpenClaw\n設定代行いただきました！',
-    speech: 'オープンクローの設定代行、いただきました。やった。全力で仕上げます。',
-    color: 'c5'
+  other: {
+    emoji: '⚡',
+    badge: '⚡ グッドニュース',
+    badgeColor: '#2ECC71',
+    title: 'グッドニュース！',
+    sub: 'チームに共有してくれてありがとう！一緒に盛り上がりましょう！',
+    label: 'その他報告数',
+    statId: 'stat-other',
+    cntId: 'cnt-other',
+    speech: 'グッドニュースです！チーム全員でお祝いしましょう！今日も最高の一日です！',
+    confettiColors: ['#2ECC71','#55DD88','#88EEAA','#BBFFCC','#EEFFEE'],
   }
-];
+};
 
-const grid = document.getElementById('grid');
-buttons.forEach((b) => {
-  const btn = document.createElement('button');
-  btn.className = `btn ${b.color}`;
-  btn.innerHTML = `
-    <div class="btn-inner">
-      <div class="btn-icon">${b.icon}</div>
-      <div class="btn-text">${b.label.replace(/\n/g,'<br>')}</div>
-    </div>`;
-  btn.addEventListener('click', () => fire(btn, b));
-  grid.appendChild(btn);
-});
+const counts = { apo: 0, juchu: 0, contact: 0, other: 0 };
+let overlayTimer = null;
 
-function fire(btn, b) {
+// ── 日付表示 ──
+function updateDate() {
+  const now = new Date();
+  const opts = { year:'numeric', month:'long', day:'numeric', weekday:'short', hour:'2-digit', minute:'2-digit' };
+  document.getElementById('date-disp').textContent = now.toLocaleString('ja-JP', opts);
+}
+updateDate();
+setInterval(updateDate, 1000);
+
+// ── 数字フラッシュ ──
+function flashStat(el) {
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 600);
+}
+
+// ── コンフェッティ ──
+function launchConfetti(colors, count = 80) {
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.setProperty('--dur', (1.2 + Math.random() * 1.2) + 's');
+    el.style.setProperty('--dy', (window.innerHeight * (.6 + Math.random() * .5)) + 'px');
+    el.style.setProperty('--dx', (Math.random() * window.innerWidth - window.innerWidth/2) + 'px');
+    el.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+    el.style.left = (Math.random() * 100) + 'vw';
+    el.style.top = '-10px';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    el.style.width = (8 + Math.random() * 12) + 'px';
+    el.style.height = (8 + Math.random() * 12) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+  }
+}
+
+// ── ポップアップ装飾ライン ──
+function addPopLines() {
+  const wrap = document.getElementById('pop-lines');
+  wrap.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    const line = document.createElement('div');
+    line.className = 'pop-line';
+    line.style.cssText = `height:${1+Math.random()*2}px; top:${10+i*25}%; left:0; right:0; transform-origin:left; animation-delay:${i*.08}s;`;
+    wrap.appendChild(line);
+  }
+}
+
+// ── xAI 音声生成 ──
+async function playVoice(text) {
+  const status = document.getElementById('sound-status');
+  status.textContent = '🎙️ Grok音声生成中...';
+  status.classList.add('show');
+  try {
+    const res = await fetch('http://localhost:8920/speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+      signal: AbortSignal.timeout(20000)
+    });
+    if (!res.ok) throw new Error('server error');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play();
+    status.textContent = '🎙️ Grok音声';
+    setTimeout(() => status.classList.remove('show'), 3000);
+  } catch(e) {
+    // フォールバック: ブラウザTTS
+    status.textContent = '🔊 ブラウザ音声 (xAIサーバー未起動)';
+    setTimeout(() => status.classList.remove('show'), 3000);
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'ja-JP'; utter.rate = 1.1;
+    const voices = speechSynthesis.getVoices();
+    const jpVoice = voices.find(v => v.lang.startsWith('ja'));
+    if (jpVoice) utter.voice = jpVoice;
+    speechSynthesis.speak(utter);
+  }
+}
+
+// ── フィードに追加 ──
+function addFeed(cfg) {
+  const feed = document.getElementById('feed');
+  document.getElementById('feed-empty')?.remove();
+  const now = new Date().toLocaleTimeString('ja-JP');
+  const item = document.createElement('div');
+  item.className = 'feed-item';
+  item.innerHTML = `
+    <div class="feed-emoji">${cfg.emoji}</div>
+    <div class="feed-body">
+      <div class="feed-name">${cfg.badge} — ${cfg.label}: ${counts[Object.keys(CONFIGS).find(k => CONFIGS[k] === cfg)]}件目</div>
+      <div class="feed-time">${now}</div>
+    </div>
+  `;
+  feed.prepend(item);
+}
+
+// ── メインfire ──
+function fire(btn, type) {
+  const cfg = CONFIGS[type];
+  counts[type]++;
+
+  // ボタン演出
   btn.classList.remove('fired');
   void btn.offsetWidth;
   btn.classList.add('fired');
-  setTimeout(() => btn.classList.remove('fired'), 500);
+  setTimeout(() => btn.classList.remove('fired'), 600);
 
-  const shout = document.getElementById('shout');
-  shout.textContent = b.speech;
-  shout.classList.remove('show');
-  void shout.offsetWidth;
-  shout.classList.add('show');
+  // カウント更新
+  const cntEl = document.getElementById(cfg.cntId);
+  cntEl.textContent = counts[type];
+  const statEl = document.getElementById(cfg.statId);
+  statEl.innerHTML = `${counts[type]}<small>件</small>`;
+  flashStat(statEl);
 
-  launchConfetti();
-  speak(b.speech);
+  // フィード
+  addFeed(cfg);
+
+  // オーバーレイ
+  showOverlay(cfg, type);
+
+  // 音声
+  playVoice(cfg.speech);
 }
 
-// ── 音声：できるだけ力強く ──────────────────────────────
-const synth = window.speechSynthesis;
+function showOverlay(cfg, type) {
+  if (overlayTimer) { clearTimeout(overlayTimer); hideOverlay(); }
 
-function speak(text) {
-  synth.cancel();
+  const overlay = document.getElementById('overlay');
 
-  // まず声一覧を取得
-  const voices = synth.getVoices();
-  doSpeak(text, voices);
+  // 再描画
+  document.getElementById('pop-badge').textContent = cfg.badge;
+  document.getElementById('pop-badge').style.cssText = `background:${cfg.badgeColor};color:#fff;`;
+  document.getElementById('pop-title').textContent = cfg.title;
+  document.getElementById('pop-sub').textContent = cfg.sub;
+  document.getElementById('pop-num').textContent = counts[type] + '件目';
+  document.getElementById('pop-num-label').textContent = '本日' + cfg.label;
+
+  // 閃光リセット
+  const flash = document.getElementById('flash-bg');
+  flash.style.background = cfg.badgeColor;
+  flash.style.animation = 'none';
+  void flash.offsetWidth;
+  flash.style.animation = 'flashBg .15s ease-out forwards';
+
+  // popBoxリセット
+  const pb = document.getElementById('pop-box');
+  pb.style.borderColor = cfg.badgeColor;
+  pb.style.animation = 'none';
+  void pb.offsetWidth;
+  pb.style.animation = 'popIn .4s cubic-bezier(.34,1.56,.64,1) forwards';
+
+  addPopLines();
+  overlay.classList.add('active');
+  launchConfetti(cfg.confettiColors);
+
+  overlayTimer = setTimeout(hideOverlay, 4000);
 }
 
-function doSpeak(text, voices) {
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang    = 'ja-JP';
-  utter.rate    = 1.0;   // 自然なテンポ
-  utter.pitch   = 0.7;   // 低め = 男性っぽく落ち着いた声
-  utter.volume  = 1.0;
-
-  // 男性声を優先（Otoya > Google日本語 > その他日本語）
-  const preferred = [
-    voices.find(v => v.lang === 'ja-JP' && v.name.includes('Otoya')),
-    voices.find(v => v.lang === 'ja-JP' && v.name.includes('otoya')),
-    voices.find(v => v.lang === 'ja-JP' && v.name.toLowerCase().includes('male')),
-    voices.find(v => v.lang === 'ja-JP' && v.name.includes('Google') && !v.name.includes('Female')),
-    voices.find(v => v.lang === 'ja-JP'),
-    voices.find(v => v.lang.startsWith('ja')),
-  ].find(Boolean);
-
-  if (preferred) utter.voice = preferred;
-
-  synth.speak(utter);
+function hideOverlay() {
+  document.getElementById('overlay').classList.remove('active');
+  overlayTimer = null;
 }
 
-// voiceschanged 対応（Safari/Chrome非同期）
-if (typeof speechSynthesis !== 'undefined') {
-  speechSynthesis.onvoiceschanged = () => {};
-  // 初回タッチでvoicesをウォームアップ
-  document.addEventListener('click', () => {
-    const warmup = new SpeechSynthesisUtterance(' ');
-    warmup.volume = 0;
-    synth.speak(warmup);
-  }, { once: true });
+document.getElementById('overlay').addEventListener('click', hideOverlay);
+
+function clearFeed() {
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '<div class="feed-empty" id="feed-empty">まだ報告がありません。最初の一件を報告しましょう！</div>';
 }
 
-// ── 紙吹雪 ──────────────────────────────────────────────
-const COLORS = ['#ff4500','#ffd700','#00d26a','#00bfff','#ff69b4','#fff','#ff8c00','#9b59b6','#ff1493','#adff2f'];
-
-function launchConfetti() {
-  const container = document.getElementById('confetti');
-  container.innerHTML = '';
-  for (let i = 0; i < 100; i++) {
-    const p = document.createElement('div');
-    p.className = 'piece';
-    const size  = 6 + Math.random() * 10;
-    const left  = Math.random() * 100;
-    const dur   = 1.1 + Math.random() * 1.5;
-    const delay = Math.random() * 0.6;
-    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-    p.style.cssText = `
-      left:${left}vw;
-      width:${size}px; height:${size*1.4}px;
-      background:${color};
-      animation-duration:${dur}s;
-      animation-delay:${delay}s;
-    `;
-    container.appendChild(p);
+// 音声ウォームアップ
+window.addEventListener('click', () => {
+  if (!window._warmed) {
+    window._warmed = true;
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0; speechSynthesis.speak(u);
   }
-  setTimeout(() => { container.innerHTML = ''; }, 3200);
-}
+}, { once: true });
 </script>
+
 </body>
 </html>
