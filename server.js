@@ -55,8 +55,8 @@ async function generateVoice(text) {
       ws.send(JSON.stringify({
         type: 'session.update',
         session: {
-          voice: 'Cove',
-          instructions: 'You are an energetic Japanese sales team announcer. Speak in Japanese only, with excitement and energy. Short, punchy delivery.',
+          voice: 'Archer',
+          instructions: 'You are an extremely energetic and excited Japanese announcer. Shout in Japanese with maximum enthusiasm and energy, like a sports commentator announcing a big goal. Very loud, very excited, very short.',
           turn_detection: null,
           modalities: ['text', 'audio'],
           output_audio_format: 'pcm16'
